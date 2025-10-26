@@ -1,0 +1,38 @@
+name: "&cTest GUI"
+refresh: 20
+shape:
+  - "c x x x x x x x x"
+  - "- - - - a - - - -"
+  - "x x x x x x x x x"
+items:
+  x:
+    id: border
+    material: black_stained_glass_pane
+  c:
+    id: close
+    material: barrier
+    name: "&cClose GUI"
+    click:
+    - "close"
+  a: # The key in the shape
+    id: diamond_item # Item id (Optional, must be unique)
+    material: diamond # Material of the item
+    name: "&aDiAmOnD!" # Display name (Optional)
+    lore: # Lore (Optional)
+      - "&7This is a &bDiamond&7!"
+      - "&7Your health: &c%player_health%❤"
+      - "&7Current time: &e%player_time%"
+    click: # Click actions (Optional)
+      - "run say hi! I am %player%~"
+      - "right-click message <#e0f6ff>You right-clicked me!"
+
+# Possible click actions:
+# - "run <command>" (Runs a command from the player)
+# - "run-server <command> (Runs a command from the console)"
+# - "message <message>" (Sends a message to the player)
+# - "open <gui>" (Open another a GUI)
+# - "close" (Close the GUI)
+# - "refresh" (Refresh the GUI)
+# Possible conditions (Add before the click action)
+# - "right-click"
+# - "left-click"

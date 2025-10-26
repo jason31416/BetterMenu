@@ -1,0 +1,14 @@
+command:
+  no-permission: "<#CC1613>错误: <#F85654>你没有权限执行此命令!"
+  gui-not-found: "<#CC1613>错误: <#F85654>未找到菜单 %menu%!"
+
+  reload: "<#4a98ff>[BetterMenu] <#e0f6ff>重新加载了 BetterMenu!"
+  gui-opened: "<#4a98ff>[BetterMenu] <#e0f6ff>打开了菜单 %menu%!"
+
+gui:
+  menu-list:
+    name: "所有菜单"
+
+    quit: "&c&l关闭"
+    previous-page: "&a&l上一页"
+    next-page: "&a&l下一页"

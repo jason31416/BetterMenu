@@ -1,0 +1,5 @@
+name: BetterMenu
+version: '1.0.0'
+main: cn.jason31416.betterMenu.BetterMenu
+api-version: '1.13'
+authors: [ Jason31416 ]
