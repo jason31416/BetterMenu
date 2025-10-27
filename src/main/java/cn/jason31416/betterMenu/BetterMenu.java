@@ -2,6 +2,7 @@ package cn.jason31416.betterMenu;
 
 import cn.jason31416.planetlib.PlanetLib;
 import cn.jason31416.planetlib.Required;
+import cn.jason31416.planetlib.command.ParameterType;
 import cn.jason31416.planetlib.command.RootCommand;
 import cn.jason31416.planetlib.gui.*;
 import cn.jason31416.planetlib.gui.itemgroup.InventoryComponent;
@@ -49,13 +50,14 @@ public final class BetterMenu extends JavaPlugin {
                 .addAlias("menu")
                 .setDirectExecutor(ctx -> Message.of("&bRunning &BetterMenu &a(v" + getPluginMeta().getVersion() + ") &7by Jason31416"))
                 .addCommandNode("reload", ctx -> {
-                    if(!ctx.getPlayer().getPlayer().isOp()){
+                    if(!ctx.getSender().sender().isOp()){
                         return Lang.getMessage("command.no-permission");
                     }
                     reload();
                     return Lang.getMessage("command.reload");
                 })
                 .addCommandNode("open", ctx -> {
+                    if(ctx.getPlayer()==null) return null;
                     if(!GUITemplate.loadedTemplates.containsKey(ctx.getArg(0))){
                         return Lang.getMessage("command.gui-not-found").add("menu", ctx.getArg(0));
                     }
@@ -68,7 +70,22 @@ public final class BetterMenu extends JavaPlugin {
                     String guiName = ctx.getArg(0);
                     return GUITemplate.loadedTemplates.keySet().stream().filter(name -> name.startsWith(guiName)).toList();
                 })
+                .addCommandNode("edit", ctx -> {
+                    if(ctx.getPlayer()==null||!ctx.checkArgs(ParameterType.STRING)) return null;
+                    if(!ctx.getSender().sender().isOp()){
+                        return Lang.getMessage("command.no-permission");
+                    }
+                    if(!GUITemplate.loadedTemplates.containsKey(ctx.getArg(0))) return Lang.getMessage("command.gui-not-found").add("menu", ctx.getArg(0));
+
+                    new GUIEditor(ctx.getPlayer(), ctx.getArg(0));
+
+                    return Lang.getMessage("command.opened-edit").add("menu", ctx.getArg(0));
+                }, ctx -> {
+                    String guiName = ctx.getArg(0);
+                    return GUITemplate.loadedTemplates.keySet().stream().filter(name -> name.startsWith(guiName)).toList();
+                })
                 .addCommandNode("list", ctx -> {
+                    if(ctx.getPlayer()==null) return null;
                     new GUISession(ctx.getPlayer())
                             .display(new GUIBuilder("menu-list")
                                     .name(Lang.getMessage("gui.menu-list.name"))
