@@ -1,1 +1,4 @@
 lang: "zh_cn"
+
+bind-commands: # key-value pair where key is the command and value is the menu id
+  opendefaultmenu: "default"

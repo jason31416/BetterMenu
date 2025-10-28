@@ -14,18 +14,29 @@ import cn.jason31416.planetlib.util.PluginLogger;
 import cn.jason31416.planetlib.util.Util;
 import cn.jason31416.planetlib.util.general.Provider;
 import cn.jason31416.planetlib.wrapper.SimpleItemStack;
+import cn.jason31416.planetlib.wrapper.SimplePlayer;
+import io.papermc.paper.command.brigadier.BasicCommand;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import io.papermc.paper.command.brigadier.Commands;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import it.unimi.dsi.fastutil.Pair;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 public final class BetterMenu extends JavaPlugin {
+    public static File guiFolder;
+
     public void reload(){
         Util.saveFolder("gui");
         Util.saveFolder("lang");
@@ -33,18 +44,43 @@ public final class BetterMenu extends JavaPlugin {
         Config.start(this);
         Lang.init("lang/"+Config.get("lang", "en_us")+".yml");
         GUITemplate.clearLoaded();
-        GUITemplate.loadFromDirectory(new File(getDataFolder(), "gui"));
+        GUITemplate.loadFromDirectory(guiFolder);
     }
 
     @Override
     public void onEnable() {
+        guiFolder = new File(getDataFolder(), "gui");
         PlanetLib.initialize(this, Required.NBT, Required.PLACEHOLDERAPI);
         PluginLogger.info("Enabling BetterMenu...");
+        Config.start(this);
 
         Util.saveFolder("gui");
         Util.saveFolder("lang");
         Lang.init("lang/"+Config.get("lang", "en_us")+".yml");
-        GUITemplate.loadFromDirectory(new File(getDataFolder(), "gui"));
+        GUITemplate.loadFromDirectory(guiFolder);
+
+        ConfigurationSection section = Config.config.getConfigurationSection("bind-commands");
+        if(section != null){
+            for(String i: section.getKeys(false)) {
+                if(GUITemplate.loadedTemplates.containsKey(section.getString(i))){
+                    getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, (commands) -> ((Commands)commands.registrar()).register(i, new BasicCommand() {
+                        public void execute(@NotNull CommandSourceStack commandSourceStack, String @NotNull [] args) {
+                            if(!(commandSourceStack.getSender() instanceof Player pl)) return;
+                            new GUISession(SimplePlayer.of(pl)) {
+                                @Override
+                                public void setup(GUI gui) {}
+                            }.display(GUITemplate.getGUI(section.getString(i)));
+                        }
+
+                        public @NotNull Collection<String> suggest(@NotNull CommandSourceStack commandSourceStack, String @NotNull [] args) {
+                            return List.of();
+                        }
+                    }));
+                }else{
+                    PluginLogger.error("Unknown GUI with ID: "+section.getString(i));
+                }
+            }
+        }
 
         RootCommand.builder("bettermenu")
                 .addAlias("menu")

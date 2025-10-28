@@ -15,6 +15,7 @@ gui:
     next-page: "&a&l下一页"
   editor:
     name: "编辑菜单 &7- &r%menu%"
+    saved: "<#4a98ff>[BetterMenu] <#e0f6ff>成功保存了对 %menu% 的修改!"
     base-item-lore:
       - "&7------------"
       - "&7该物品继承自父菜单: &f%base-name%"
@@ -32,5 +33,12 @@ gui:
           - "&7当前物品名称: &f%current%"
       lore:
         name: "&f&l物品描述"
+      material:
+        name: "&f&l物品类型"
         lore:
-          - "&7当前物品描述: &f%current%"
+          - "&7当前物品类型: &f%current%"
+          - "&e&o使用对应物品点击设置物品类型"
+      close:
+        name: "&f&l返回"
+        lore:
+          - "&7返回GUI"

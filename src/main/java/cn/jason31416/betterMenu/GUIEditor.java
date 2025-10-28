@@ -16,8 +16,10 @@ import cn.jason31416.planetlib.util.general.ShitMountainException;
 import cn.jason31416.planetlib.wrapper.SimpleItemStack;
 import cn.jason31416.planetlib.wrapper.SimplePlayer;
 import org.bukkit.Material;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.ItemStack;
 
+import java.io.File;
 import java.util.*;
 
 public class GUIEditor {
@@ -83,9 +85,8 @@ public class GUIEditor {
         }
         for(String key : template.inventory.keySet()) {
             InventoryItem component = template.inventory.get(key).copy();
-            component.addItemModifier(item -> (item.lore==null?item.setLore(new MessageList(new ArrayList<>())):item).lore.getContent().addAll(Lang.getMessageList("gui.editor.self-item-lore").asList()));
             applyClickable(component);
-            gui.addItem(key, component);
+            gui.addItem(key, component.copy().addItemModifier(item -> (item.lore==null?item.setLore(new MessageList(new ArrayList<>())):item).lore.getContent().addAll(Lang.getMessageList("gui.editor.self-item-lore").asList())));
             for(int slot: component.getSlots()){
                 slots.remove(slot);
                 selfInventory.put(slot, Pair.of(key, component));
@@ -96,26 +97,64 @@ public class GUIEditor {
             addEmptyItem(slot);
         }
 
-        new GUISession(player).display(gui);
+        new GUISession(player){
+            @Override
+            public void onClose(){
+                if(gui.getPlayer().isOnline())
+                    gui.getPlayer().sendMessage(Lang.getMessage("gui.editor.saved").add("menu", guiId));
+                Map<String, InventoryItem> inventory = new HashMap<>();
+                for(var entry: selfInventory.entrySet()){
+                    if(!inventory.containsKey(entry.getValue().first())){
+                        var x = entry.getValue().second().copy();
+                        x.slots = new ArrayList<>();
+                        x.slots.add(entry.getKey());
+                        inventory.put(entry.getValue().first(), x);
+                    }else{
+                        inventory.get(entry.getValue().first()).slots.add(entry.getKey());
+                    }
+                }
+                var x = GUITemplate.loadedTemplates.get(guiId);
+                x.inventory = inventory;
+                x.saveToFile(new File(BetterMenu.guiFolder, guiId+".yml"));
+            }
+        }.display(gui);
     }
 
     public void openItemEditor(String itemId, InventoryItem item){
+        SimpleItemStack currentStack = item.stack.get();
         getSession().display(new GUIBuilder("itemeditor-"+itemId+"-"+UUID.randomUUID())
                         .name(Lang.getMessage("gui.item-editor.name").add("menu", guiId).add("item", itemId))
-                        .shape( "x x x x i x x x x",
-                                "x n l - - - - - x",
+                        .shape( "q x x x i x x x x",
+                                "x n l m - - - - x",
                                 "x x x x x x x x x")
                         .setItem("x", new SimpleItemStack().setMaterial(Material.GRAY_STAINED_GLASS_PANE).setName(" "))
                         .setItem("n", new GUIBuilder.StackedItem()
-                                .item(()->new SimpleItemStack().setMaterial(Material.NAME_TAG).setName(Lang.getMessage("gui.item-editor.item.name.name")).setLore(Lang.getMessageList("gui.item-editor.item.name.lore").add("current", "")))
+                                .item(()->new SimpleItemStack().setMaterial(Material.NAME_TAG).setName(Lang.getMessage("gui.item-editor.item.name.name")).setLore(Lang.getMessageList("gui.item-editor.item.name.lore").add("current", currentStack.name.toString())))
                                 .id("name-input")
                                 //todo: runnable
                         )
-                .setItem("l", new GUIBuilder.StackedItem()
-                                .item(()->new SimpleItemStack().setMaterial(Material.PAPER).setName(Lang.getMessage("gui.item-editor.item.lore.name")).setLore(Lang.getMessageList("gui.item-editor.item.lore.lore")))
+                        .setItem("l", new GUIBuilder.StackedItem()
+                                .item(()->new SimpleItemStack().setMaterial(Material.PAPER).setName(Lang.getMessage("gui.item-editor.item.lore.name")).setLore((currentStack.lore==null?new MessageList(new ArrayList<>()):currentStack.lore).asList()))
                                 .id("lore-input")
-                        //todo: runnable
-                )
+                                //todo: runnable
+                        )
+                        .setItem("m", new GUIBuilder.StackedItem()
+                                .item(()->new SimpleItemStack().setMaterial(Material.ANVIL).setName(Lang.getMessage("gui.item-editor.item.material.name")).setLore(Lang.getMessageList("gui.item-editor.item.material.lore").add("current", currentStack.material.toString().toLowerCase(Locale.ROOT))))
+                                .id("material-input")
+                                .runnable(invocation->{
+                                    if(invocation.getAction() == InventoryAction.SWAP_WITH_CURSOR) {
+                                        currentStack.setMaterial(invocation.getEvent().getCursor().getType());
+                                        item.stack = currentStack::copy;
+                                        ((InventoryItem) Objects.requireNonNull(gui.getItem(itemId))).stack = currentStack::copy;
+                                        invocation.getGui().update();
+                                    }
+                                })
+                        )
+                        .setItem("i", new GUIBuilder.StackedItem().item(currentStack::copy))
+                        .setItem("q", new GUIBuilder.StackedItem()
+                                .item(()->new SimpleItemStack().setMaterial(Material.BARRIER).setName(Lang.getMessage("gui.item-editor.item.close.name")).setLore(Lang.getMessageList("gui.item-editor.item.close.lore")))
+                                .runnable(inv->gui.getSession().display(this.gui))
+                        )
                 .build());
     }
 
@@ -123,7 +162,7 @@ public class GUIEditor {
     public void applyClickable(InventoryItem item){
         item.clickable.clear();
         item.addClickHandler(invocation -> {
-            invocation.getPlayer().sendMessage(Message.of("You've clicked item with "+invocation.getAction()));
+//            invocation.getPlayer().sendMessage(Message.of("You've clicked item with "+invocation.getAction()));
             switch (invocation.getAction()) {
                 case PICKUP_ALL -> {
                     int slot = invocation.getSlot();
@@ -161,7 +200,7 @@ public class GUIEditor {
     public void applyEmptyClickable(InventoryItem item){
         item.clickable.clear();
         item.addClickHandler(invocation -> {
-            invocation.getPlayer().sendMessage(Message.of("You've clicked empty slot "+invocation.getAction()));
+//            invocation.getPlayer().sendMessage(Message.of("You've clicked empty slot "+invocation.getAction()));
             switch (invocation.getAction()) {
                 case PLACE_ALL, SWAP_WITH_CURSOR -> {
                     SimpleItemStack cursor = new SimpleItemStack().setItemStack(invocation.getEvent().getCursor());
