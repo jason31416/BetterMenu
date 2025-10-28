@@ -5,6 +5,9 @@ import cn.jason31416.planetlib.Required;
 import cn.jason31416.planetlib.command.ParameterType;
 import cn.jason31416.planetlib.command.RootCommand;
 import cn.jason31416.planetlib.gui.*;
+import cn.jason31416.planetlib.gui.clickaction.ClickHandler;
+import cn.jason31416.planetlib.gui.clickaction.DefaultClickActions;
+import cn.jason31416.planetlib.gui.clickaction.RegisteredGUIRunnable;
 import cn.jason31416.planetlib.gui.itemgroup.InventoryComponent;
 import cn.jason31416.planetlib.gui.itemgroup.InventoryList;
 import cn.jason31416.planetlib.message.Message;
@@ -20,9 +23,11 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import it.unimi.dsi.fastutil.Pair;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,6 +40,16 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 public final class BetterMenu extends JavaPlugin {
+    public static class BetterClickActions {
+        @ClickHandler(id="server")
+        public void serverAction(GUIRunnable.RunnableInvocation invocation, String[] args) {
+            if(args.length < 1) return;
+            String serverName = String.join(" ", args);
+
+            PluginMessageHandler.sendBungeeCordMessage("BungeeCord", invocation.getPlayer().getPlayer(), "Connect", serverName);
+        }
+    }
+
     public static File guiFolder;
 
     public void reload(){
@@ -50,7 +65,13 @@ public final class BetterMenu extends JavaPlugin {
     @Override
     public void onEnable() {
         guiFolder = new File(getDataFolder(), "gui");
-        PlanetLib.initialize(this, Required.NBT, Required.PLACEHOLDERAPI);
+        if(Bukkit.getPluginManager().getPlugin("Vault") == null) {
+            PlanetLib.initialize(this, Required.NBT, Required.PLACEHOLDERAPI);
+        }else{
+            PlanetLib.initialize(this, Required.NBT, Required.PLACEHOLDERAPI, Required.VAULT);
+        }
+        PluginMessageHandler.registerBungeeCordListener();
+        RegisteredGUIRunnable.registerAll(new BetterClickActions());
         PluginLogger.info("Enabling BetterMenu...");
         Config.start(this);
 
@@ -84,7 +105,7 @@ public final class BetterMenu extends JavaPlugin {
 
         RootCommand.builder("bettermenu")
                 .addAlias("menu")
-                .setDirectExecutor(ctx -> Message.of("&bRunning &BetterMenu &a(v" + getPluginMeta().getVersion() + ") &7by Jason31416"))
+                .setDirectExecutor(ctx -> Message.of("&bRunning BetterMenu &a(v" + getPluginMeta().getVersion() + ") &7by Jason31416"))
                 .addCommandNode("reload", ctx -> {
                     if(!ctx.getSender().sender().isOp()){
                         return Lang.getMessage("command.no-permission");
@@ -122,10 +143,11 @@ public final class BetterMenu extends JavaPlugin {
                 })
                 .addCommandNode("list", ctx -> {
                     if(ctx.getPlayer()==null) return null;
+                    if(!ctx.getPlayer().getPlayer().hasPermission("bettermenu.list")) return Lang.getMessage("command.no-permission");
                     new GUISession(ctx.getPlayer())
                             .display(new GUIBuilder("menu-list")
                                     .name(Lang.getMessage("gui.menu-list.name"))
-                                    .shape( "q x x x i x x x x",
+                                    .shape( "q x x x x x x x x",
                                             "x a a a a a a a x",
                                             "x a a a a a a a x",
                                             "x a a a a a a a x",
@@ -136,7 +158,6 @@ public final class BetterMenu extends JavaPlugin {
                                             .setName(Lang.getMessage("gui.menu-list.quit"))
                                             ).runnable(inv->inv.getGui().close())
                                     )
-                                    .setItem("i", "info")
                                     .setItem("a", GUIBuilder.ListedItem.builder().id("list").items(
                                             GUITemplate.loadedTemplates.keySet().stream()
                                             .map(name -> new InventoryList.ListItem(

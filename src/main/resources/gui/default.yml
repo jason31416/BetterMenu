@@ -1,10 +1,10 @@
-name: "&cTest GUI"
-refresh: 20
-shape:
+name: "&cTest GUI" # The title of the GUI
+refresh: 20 # Optional. The refresh rate of the GUI in ticks.
+shape: # The shape of the GUI
   - "c x x x x x x x x"
   - "- - - - a - - - -"
   - "x x x x x x x x x"
-items:
+items: # Item mapping for the GUI (key represents the key in the shape)
   x:
     id: border
     material: black_stained_glass_pane
@@ -33,6 +33,7 @@ items:
 # - "open <gui>" (Open another a GUI)
 # - "close" (Close the GUI)
 # - "refresh" (Refresh the GUI)
+# - "server <server>" (Connects the player to another server)
 # Possible conditions (Add before the click action)
 # - "right-click"
 # - "left-click"
