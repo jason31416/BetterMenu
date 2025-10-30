@@ -2,14 +2,58 @@ command:
   no-permission: "<#CC1613>错误: <#F85654>你没有权限执行此命令!"
   gui-not-found: "<#CC1613>错误: <#F85654>未找到菜单 %menu%!"
 
+  gui-already-exists: "<#CC1613>错误: <#F85654>该菜单已存在!"
+  invalid-size: "<#CC1613>错误: <#F85654>菜单大小必须为9/18/27/36/45/54!"
+
   reload: "<#4a98ff>[BetterMenu] <#e0f6ff>重新加载了 BetterMenu!"
   gui-opened: "<#4a98ff>[BetterMenu] <#e0f6ff>打开了菜单 %menu%!"
   opened-edit: "<#4a98ff>[BetterMenu] <#e0f6ff>正在编辑 %menu%!"
 
+  input:
+    cancelled: "<#4a98ff>[BetterMenu] <#e0f6ff>成功取消了输入"
+    not-in-input: "<#CC1613>错误: <#F85654>没有进行中的输入!"
+
+input:
+  name: "<#4a98ff>[BetterMenu] <#a8f6ca>请输入物品名 <#FC8D6E><click:run_command:'binput cancel'>[取消]</click>"
+  lore:
+    edit-prompt: "<#a8f6ca>请输入该行文本 <#FC8D6E><click:run_command:'binput cancel'>[取消]</click>"
+    header: "<#FC8D6E><click:run_command:'bloreinput cancel'>[<]</click> &7=== <#e0f6ff>物品描述 &7=== &a<click:run_command:'bloreinput submit'>[保存]</click>"
+    line: "<#FC8D6E><click:run_command:'bloreinput remove %line%'>[-]</click> <click:run_command:'bloreinput edit %line%'>[🖊]</click> &f%content%"
+    footer: "<#a8f6ca><click:run_command:'bloreinput add'>[+] 添加一行描述</click>"
+  action:
+    header: "<#FC8D6E><click:run_command:'bactioninput cancel'>[<]</click> &7=== <#e0f6ff>物品点击效果 &7=== <#a8f6ca><click:run_command:'bactioninput submit'>[保存]</click>"
+    line: "<#FC8D6E><click:run_command:'bactioninput remove %line%'>[-]</click> &f%content%"
+    footer: "<#a8f6ca><click:run_command:'bactioninput add'>[+] 添加</click>"
+    add-prompt:
+
+      custom: "<#a8f6ca>请输入点击事件 <#FC8D6E><click:run_command:'bactioninput cancel'>[取消]</click>"
+
+      type:
+      - "<#e0f6ff>请选择点击事件类型 <#FC8D6E><click:run_command:'bactioninput list'>[取消]</click>"
+      - "&8- <click:run_command:'bactioninput add run'><hover:show_text:'&7点击选择'>&f以玩家身份运行命令 &7(run)</hover></click>"
+      - "&8- <click:run_command:'bactioninput add run-server'><hover:show_text:'&7点击选择'>&f以服务器身份运行命令 &7(run-server)</hover></click>"
+      - "&8- <click:run_command:'bactioninput add message'><hover:show_text:'&7点击选择'>&f发送信息 &7(message)</hover></click>"
+      - "&8- <click:run_command:'bactioninput add open'><hover:show_text:'&7点击选择'>&f打开另一个GUI &7(open)</hover></click>"
+      - "&8- <click:run_command:'bactioninput add close'><hover:show_text:'&7点击选择'>&f关闭GUI &7(close)</hover></click>"
+      - "&8- <click:run_command:'bactioninput add refresh'><hover:show_text:'&7点击选择'>&f刷新GUI &7(refresh)</hover></click>"
+      - "&8- <click:run_command:'bactioninput add server'><hover:show_text:'&7点击选择'>&f连接到另一服务器 &7(server)</hover></click>"
+      - "&8- <click:run_command:'bactioninput add custom'><hover:show_text:'&7点击选择'>&f其他类型</hover></click>"
+
+      parameter:
+        command: "<#a8f6ca>请输入命令内容 <#FC8D6E><click:run_command:'bactioninput cancel'>[取消]</click>"
+        message: "<#a8f6ca>请输入消息内容 <#FC8D6E><click:run_command:'bactioninput cancel'>[取消]</click>"
+        gui: "<#a8f6ca>请输入GUI名称 <#FC8D6E><click:run_command:'bactioninput cancel'>[取消]</click>"
+        server: "<#a8f6ca>请输入目标服务器的bc/vc ID <#FC8D6E><click:run_command:'bactioninput cancel'>[取消]</click>"
+
+      condition:
+        - "<#e0f6ff>请选择点击事件条件 <#FC8D6E><click:run_command:'bactioninput list'>[取消]</click>"
+        - "&8- <click:run_command:'bactioninput %prev% a#right-click'><hover:show_text:'&7点击选择'>&f右键点击 &7(right-click)</hover></click>"
+        - "&8- <click:run_command:'bactioninput %prev% a#left-click'><hover:show_text:'&7点击选择'>&f左键点击 &7(left-click)</hover></click>"
+        - "&8- <click:run_command:'bactioninput %prev% a#none'><hover:show_text:'&7点击选择'>&f任意方式 &7(none)</hover></click>"
+
 gui:
   menu-list:
     name: "所有菜单"
-
     quit: "&c&l关闭"
     previous-page: "&a&l上一页"
     next-page: "&a&l下一页"
@@ -23,6 +67,7 @@ gui:
       - "&7------------"
       - "&c- &fShift+点击删除物品"
       - "&a+ &f手持物品放入该位置"
+      - "&e* &f右键点击编辑物品"
   item-editor:
     name: "编辑物品 &7- &r%menu% &7- &r%item%"
 
@@ -38,6 +83,14 @@ gui:
         lore:
           - "&7当前物品类型: &f%current%"
           - "&e&o使用对应物品点击设置物品类型"
+      glow:
+        name: "&f&l附魔效果"
+        lore:
+          - "&7启用: &f%current%"
+      click-actions:
+        name: "&f&l点击事件"
+        lore:
+          - "&7点击查看/修改"
       close:
         name: "&f&l返回"
         lore:

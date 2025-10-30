@@ -1,43 +1,38 @@
 package cn.jason31416.betterMenu;
 
+import cn.jason31416.betterMenu.chatinput.ActionInputCommand;
+import cn.jason31416.betterMenu.chatinput.ChatInputHandler;
+import cn.jason31416.betterMenu.chatinput.ListInputCommand;
 import cn.jason31416.planetlib.PlanetLib;
 import cn.jason31416.planetlib.Required;
 import cn.jason31416.planetlib.command.ParameterType;
 import cn.jason31416.planetlib.command.RootCommand;
 import cn.jason31416.planetlib.gui.*;
 import cn.jason31416.planetlib.gui.clickaction.ClickHandler;
-import cn.jason31416.planetlib.gui.clickaction.DefaultClickActions;
 import cn.jason31416.planetlib.gui.clickaction.RegisteredGUIRunnable;
-import cn.jason31416.planetlib.gui.itemgroup.InventoryComponent;
 import cn.jason31416.planetlib.gui.itemgroup.InventoryList;
 import cn.jason31416.planetlib.message.Message;
 import cn.jason31416.planetlib.util.Config;
 import cn.jason31416.planetlib.util.Lang;
 import cn.jason31416.planetlib.util.PluginLogger;
 import cn.jason31416.planetlib.util.Util;
-import cn.jason31416.planetlib.util.general.Provider;
 import cn.jason31416.planetlib.wrapper.SimpleItemStack;
 import cn.jason31416.planetlib.wrapper.SimplePlayer;
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
-import it.unimi.dsi.fastutil.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Stream;
 
 public final class BetterMenu extends JavaPlugin {
     public static class BetterClickActions {
@@ -79,6 +74,11 @@ public final class BetterMenu extends JavaPlugin {
         Util.saveFolder("lang");
         Lang.init("lang/"+Config.get("lang", "en_us")+".yml");
         GUITemplate.loadFromDirectory(guiFolder);
+
+        ChatInputHandler.registerInputCommand();
+        ListInputCommand.registerCommand();
+        ActionInputCommand.registerCommand();
+        Bukkit.getPluginManager().registerEvents(new ChatInputHandler(), this);
 
         ConfigurationSection section = Config.config.getConfigurationSection("bind-commands");
         if(section != null){
@@ -140,6 +140,29 @@ public final class BetterMenu extends JavaPlugin {
                 }, ctx -> {
                     String guiName = ctx.getArg(0);
                     return GUITemplate.loadedTemplates.keySet().stream().filter(name -> name.startsWith(guiName)).toList();
+                })
+                .addCommandNode("create", ctx -> {
+                    if(ctx.getPlayer()==null||!ctx.checkArgs(ParameterType.STRING, ParameterType.INTEGER, ParameterType.STRING)) return null;
+                    if(!ctx.getSender().sender().isOp()) {
+                        return Lang.getMessage("command.no-permission");
+                    }
+                    if(GUITemplate.loadedTemplates.containsKey(ctx.getArg(0))){
+                        return Lang.getMessage("command.gui-already-exists");
+                    }
+                    if(ctx.getIntArg(1)%9!=0||ctx.getIntArg(1)<9||ctx.getIntArg(1)>54){
+                        return Lang.getMessage("command.invalid-size");
+                    }
+                    GUITemplate template = new GUITemplate(Message.of(String.join(" ",ctx.args().subList(2, ctx.args().size()))));
+                    template.size = ctx.getIntArg(1);
+                    template.id = ctx.getArg(0);
+                    template.saveToFile(new File(guiFolder, template.id+".yml"));
+                    GUITemplate.loadedTemplates.put(template.id, template);
+                    PlanetLib.getScheduler().runNextTick(t->Bukkit.dispatchCommand(ctx.getPlayer().getPlayer(), "bettermenu edit "+template.id));
+                    return null;
+                }, ctx -> {
+                    if(ctx.getCurrentArg()==1) return List.of("<id>");
+                    if(ctx.getCurrentArg()==2) return List.of("<size>");
+                    return List.of("<title>");
                 })
                 .addCommandNode("list", ctx -> {
                     if(ctx.getPlayer()==null) return null;

@@ -2,3 +2,17 @@ lang: "zh_cn"
 
 bind-commands: # key-value pair where key is the command and value is the menu id
   opendefaultmenu: "default"
+
+# Below are some informations about the clickable actions of the menu
+
+# Possible click actions:
+# - "run <command>" (Runs a command from the player)
+# - "run-server <command> (Runs a command from the console)"
+# - "message <message>" (Sends a message to the player)
+# - "open <gui>" (Open another a GUI)
+# - "close" (Close the GUI)
+# - "refresh" (Refresh the GUI)
+# - "server <server>" (Connects the player to another server)
+# Possible conditions (Add before the click action. E.g., "left-click run say Hello")
+# - "right-click"
+# - "left-click"
