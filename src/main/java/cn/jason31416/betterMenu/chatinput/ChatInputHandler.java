@@ -57,7 +57,7 @@ public class ChatInputHandler implements Listener {
 
     @EventHandler @SuppressWarnings("deprecation")
     public void onPlayerChat(ChatEvent event){
-        PluginLogger.send(Message.of(event.message()));
+//        PluginLogger.send(Message.of(event.message()));
         SimplePlayer pl = SimplePlayer.of(event.getPlayer());
         if(inputTasks.containsKey(pl)){
             String message = Message.of(event.message()).toFormatted();

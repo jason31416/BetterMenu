@@ -87,6 +87,9 @@ public final class BetterMenu extends JavaPlugin {
                     getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, (commands) -> ((Commands)commands.registrar()).register(i, new BasicCommand() {
                         public void execute(@NotNull CommandSourceStack commandSourceStack, String @NotNull [] args) {
                             if(!(commandSourceStack.getSender() instanceof Player pl)) return;
+                            if(!pl.hasPermission(Config.getString("menu-permissions."+section.getString(i)))){
+
+                            }
                             new GUISession(SimplePlayer.of(pl)) {
                                 @Override
                                 public void setup(GUI gui) {}
@@ -117,6 +120,9 @@ public final class BetterMenu extends JavaPlugin {
                     if(ctx.getPlayer()==null) return null;
                     if(!GUITemplate.loadedTemplates.containsKey(ctx.getArg(0))){
                         return Lang.getMessage("command.gui-not-found").add("menu", ctx.getArg(0));
+                    }
+                    if(!ctx.getPlayer().getPlayer().hasPermission("bettermenu.open."+ctx.getArg(0))){
+                        return Lang.getMessage("command.no-permission");
                     }
                     new GUISession(ctx.getPlayer()) {
                         @Override

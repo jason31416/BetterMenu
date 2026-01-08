@@ -1,5 +1,5 @@
 name: BetterMenu
-version: '1.0.0'
+version: '${project.version}'
 main: cn.jason31416.betterMenu.BetterMenu
-api-version: '1.13'
+api-version: '1.21'
 authors: [ Jason31416 ]
