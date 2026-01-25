@@ -118,14 +118,20 @@ public final class BetterMenu extends JavaPlugin {
                     return Lang.getMessage("command.reload");
                 })
                 .addCommandNode("open", ctx -> {
-                    if(ctx.getPlayer()==null) return null;
+                    SimplePlayer pl = null;
+                    if(ctx.args().size() >= 2 && ctx.sender().sender().isOp()){
+                        var tmp_pl = SimplePlayer.of(ctx.getArg(1));
+                        if(tmp_pl.isOnline()) pl=tmp_pl;
+                    }
+                    if(pl==null&&ctx.getPlayer()==null) return null;
+                    else if(pl==null) pl = ctx.getPlayer();
                     if(!GUITemplate.loadedTemplates.containsKey(ctx.getArg(0))){
                         return Lang.getMessage("command.gui-not-found").add("menu", ctx.getArg(0));
                     }
-                    if(!ctx.getPlayer().getPlayer().hasPermission("bettermenu.open."+ctx.getArg(0))){
+                    if(!ctx.getSender().sender().isOp()&&!ctx.getSender().sender().hasPermission("bettermenu.open."+ctx.getArg(0))){
                         return Lang.getMessage("command.no-permission");
                     }
-                    new GUISession(ctx.getPlayer()) {
+                    new GUISession(pl) {
                         @Override
                         public void setup(GUI gui) {}
                     }.display(GUITemplate.getGUI(ctx.getArg(0)));
